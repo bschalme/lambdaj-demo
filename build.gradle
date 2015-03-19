@@ -1,5 +1,9 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'maven'
+
+group = 'ca.airspeed.demo'
+version = '1.0.0-SNAPSHOT'
 
 repositories {
     mavenCentral()

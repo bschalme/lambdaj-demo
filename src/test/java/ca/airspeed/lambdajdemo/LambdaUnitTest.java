@@ -18,14 +18,18 @@ package ca.airspeed.lambdajdemo;
 import static ch.lambdaj.Lambda.having;
 import static ch.lambdaj.Lambda.on;
 import static ch.lambdaj.Lambda.select;
+import static ch.lambdaj.Lambda.sort;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class LambdaUnitTest {
@@ -33,15 +37,24 @@ public class LambdaUnitTest {
     private static final String EMPLOYEE = "Employee";
     private static final String CONTRACTOR = "Contractor";
 
-    @Test
-    public void testSelect() {
-        List<Person> people = brianAndJen();
+    private List<Person> people;
 
+    @Before
+    public void setUp() throws Exception {
+        people = staff();
+    }
+
+    @Test
+    public void testSelectUsingLambdaj() {
         List<Person> hiredGuns = select(people,
                 having(on(Person.class).getRelationship(), equalTo(CONTRACTOR)));
-        assertThat(hiredGuns, hasSize(equalTo(1)));
 
-        hiredGuns = new ArrayList<Person>();
+        assertThat(hiredGuns, hasSize(equalTo(1)));
+    }
+
+    @Test
+    public void testSelect() throws Exception {
+        List<Person> hiredGuns = new ArrayList<Person>();
         for (Person person : people) {
             String relationship = person.getRelationship();
             if (relationship != null && relationship.equals(CONTRACTOR)) {
@@ -51,7 +64,29 @@ public class LambdaUnitTest {
         assertThat(hiredGuns, hasSize(equalTo(1)));
     }
 
-    private List<Person> brianAndJen() {
+    @Test
+    public void testSortByLastNameUsingLambdaj() throws Exception {
+        List<Person> sorted = sort(people, on(Person.class).getLastName());
+
+        assertThat(sorted.get(0).getLastName(), equalTo("Flintstone"));
+        assertThat(sorted.get(1).getLastName(), equalTo("Red"));
+        assertThat(sorted.get(2).getLastName(), equalTo("Schalme"));
+    }
+
+    @Test
+    public void testSortByLastName() throws Exception {
+        Collections.sort(people, new Comparator<Person>() {
+            public int compare(Person thisOne, Person thatOne) {
+                return thisOne.getLastName().compareTo(thatOne.getLastName());
+            }
+        });
+
+        assertThat(people.get(0).getLastName(), equalTo("Flintstone"));
+        assertThat(people.get(1).getLastName(), equalTo("Red"));
+        assertThat(people.get(2).getLastName(), equalTo("Schalme"));
+    }
+
+    private List<Person> staff() {
         Department sd = new Department();
         sd.setId(417);
         sd.setName("Software Development");
@@ -59,6 +94,12 @@ public class LambdaUnitTest {
         san.setId(418);
         san.setName("Systems Analysis");
 
+        Person fred = new Person();
+        fred.setId(0);
+        fred.setFirstName("Fred");
+        fred.setLastName("Flintstone");
+        fred.setRelationship(EMPLOYEE);
+        fred.setDepartment(sd);
         Person brian = new Person();
         brian.setId(9567);
         brian.setFirstName("Brian");
@@ -72,6 +113,6 @@ public class LambdaUnitTest {
         jen.setRelationship(EMPLOYEE);
         jen.setDepartment(san);
 
-        return asList(new Person[] { brian, jen });
+        return asList(new Person[] { fred, brian, jen });
     }
 }
