@@ -15,6 +15,7 @@
  */
 package ca.airspeed.lambdajdemo;
 
+import static ch.lambdaj.Lambda.by;
 import static ch.lambdaj.Lambda.having;
 import static ch.lambdaj.Lambda.on;
 import static ch.lambdaj.Lambda.select;
@@ -31,6 +32,9 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import ch.lambdaj.Lambda;
+import ch.lambdaj.group.Group;
 
 public class LambdaUnitTest {
 
@@ -84,6 +88,34 @@ public class LambdaUnitTest {
         assertThat(people.get(0).getLastName(), equalTo("Flintstone"));
         assertThat(people.get(1).getLastName(), equalTo("Red"));
         assertThat(people.get(2).getLastName(), equalTo("Schalme"));
+    }
+
+    @Test
+    public void testGroupUsingLambdaj() throws Exception {
+        Group<Person> group = Lambda.group(people, by(on(Person.class)
+                .getRelationship()));
+        Group<Person> contractors = group.findGroup(CONTRACTOR);
+        Group<Person> employees = group.findGroup(EMPLOYEE);
+
+        assertThat(contractors.getSize(), equalTo(1));
+        assertThat(employees.getSize(), equalTo(2));
+    }
+
+    @Test
+    public void testGroup() throws Exception {
+        List<Person> contractors = new ArrayList<Person>();
+        List<Person> employees = new ArrayList<Person>();
+        for (Person dude : people) {
+            if (dude.getRelationship().equals(CONTRACTOR)) {
+                contractors.add(dude);
+            }
+            if (dude.getRelationship().equals(EMPLOYEE)) {
+                employees.add(dude);
+            }
+        }
+
+        assertThat(contractors.size(), equalTo(1));
+        assertThat(employees.size(), equalTo(2));
     }
 
     private List<Person> staff() {
